@@ -1424,8 +1424,6 @@ class MCAPI {
             echo "************************************************************************************\n\n";
             echo "Successfully completed.\n\n";
             echo "************************************************************************************\n\n";
-
-            print_r(json_decode(json_encode($response), true));
             
             return json_decode(json_encode($response), true);
         }
@@ -1450,10 +1448,13 @@ class MCAPI {
     string type an internal type generally specifying the orginating mail provider - may not be useful outside of filling report views
      */
     function campaignAbuseReports($cid, $since=NULL, $start=0, $limit=500) {
-        //assure that this lines up properly and that the necessary parameters are utilized
         $method = 'GET';
-        $endpoint = '/reports/' . $cid; 
+        
+        $listId = $this->getCampaignListId($cid);
+
+        $endpoint = '/lists/' . $listId . '/abuse-reports';
         $url = $this->apiHost . $endpoint;
+        $url = $url . '?count=' . $limit . '&offset=' . $start;
         $url = parse_url($url);
 
         $this->apiUrl = $url;
@@ -1464,9 +1465,37 @@ class MCAPI {
 
         $response = json_decode($response, true);
 
-        print_r($response);
+        //print_r($response);
 
-        print_r($url);
+        if ($response->errors || substr($response->status,0,1) === '4') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status; 
+
+            echo "************************************************************************************\n\n";
+            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+            echo "************************************************************************************\n\n";
+
+            return false;
+        }
+
+        if ($response->errors || substr($response->status,0,1) === '5') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status;
+
+            echo "************************************************************************************\n\n";
+            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
+            echo "************************************************************************************\n\n";
+            
+            return false;
+        }
+
+        if (!$response->errors) {
+            echo "************************************************************************************\n\n";
+            echo "Successfully completed.\n\n";
+            echo "************************************************************************************\n\n";
+            
+            return json_decode(json_encode($response), true);
+        }
     }
 
     /**
@@ -1484,6 +1513,7 @@ class MCAPI {
      */
     function campaignAdvice($cid) {
         $method = 'GET';
+
         $endpoint = '/reports/' . $cid . '/advice'; 
         $url = $this->apiHost . $endpoint;
         $url = parse_url($url);
@@ -1494,11 +1524,41 @@ class MCAPI {
 
         $response = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = json_decode($response);
 
-        print_r($response);
+        //print_r($response);
 
-        print_r($url);
+        if ($response->errors || substr($response->status,0,1) === '4') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status; 
+
+            echo "************************************************************************************\n\n";
+            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+            echo "************************************************************************************\n\n";
+
+            return false;
+        }
+
+        if ($response->errors || substr($response->status,0,1) === '5') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status;
+
+            echo "************************************************************************************\n\n";
+            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
+            echo "************************************************************************************\n\n";
+            
+            return false;
+        }
+
+        if (!$response->errors) {
+            echo "************************************************************************************\n\n";
+            echo "Successfully completed.\n\n";
+            echo "************************************************************************************\n\n";
+
+            print_r(json_decode(json_encode($response), true));
+            
+            return json_decode(json_encode($response), true);
+        }
     }
 
     /**
@@ -1527,7 +1587,13 @@ class MCAPI {
     function campaignAnalytics($cid) {
         //this function doesnt seem to translate at all
         //need to find proper end point
+        $this->errorMessage = "This function does not translate to an endpoint in the 3.0 api.";
+        $this->errorCode = 400; 
 
+        echo "************************************************************************************\n\n";
+        echo $this->errorCode . ": (" . $this->errorMessage . ")\n\n";
+        echo "************************************************************************************\n\n";
+        return false;
     }
 
     /**
@@ -1544,7 +1610,13 @@ class MCAPI {
     boolean region_detail Whether or not a subsequent call to campaignGeoOpensByCountry() will return anything
      */
     function campaignGeoOpens($cid) {
+        $this->errorMessage = "This function does not translate to an endpoint in the 3.0 api.";
+        $this->errorCode = 400; 
 
+        echo "************************************************************************************\n\n";
+        echo $this->errorCode . ": (" . $this->errorMessage . ")\n\n";
+        echo "************************************************************************************\n\n";
+        return false;
     }
 
     /**
@@ -1562,6 +1634,13 @@ class MCAPI {
      */
     function campaignGeoOpensForCountry($cid, $code) {
         //find proper endpoint
+        $this->errorMessage = "This function does not translate to an endpoint in the 3.0 api.";
+        $this->errorCode = 400; 
+
+        echo "************************************************************************************\n\n";
+        echo $this->errorCode . ": (" . $this->errorMessage . ")\n\n";
+        echo "************************************************************************************\n\n";
+        return false;
     }
 
     /** 
@@ -1616,6 +1695,38 @@ class MCAPI {
         print_r($response);
 
         print_r($url);
+
+        if ($response->errors || substr($response->status,0,1) === '4') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status; 
+
+            echo "************************************************************************************\n\n";
+            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+            echo "************************************************************************************\n\n";
+
+            return false;
+        }
+
+        if ($response->errors || substr($response->status,0,1) === '5') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status;
+
+            echo "************************************************************************************\n\n";
+            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
+            echo "************************************************************************************\n\n";
+            
+            return false;
+        }
+
+        if (!$response->errors) {
+            echo "************************************************************************************\n\n";
+            echo "Successfully completed.\n\n";
+            echo "************************************************************************************\n\n";
+
+            print_r(json_decode(json_encode($response), true));
+            
+            return json_decode(json_encode($response), true);
+        }
     }
 
     /**
@@ -4796,6 +4907,10 @@ $merge = array(
 
 //$api->campaignMembers($newCamp);
 
-$api->campaignUnsubscribes($newCamp);
+//$api->campaignUnsubscribes($newCamp);
 
 //$api->campaignSegmentTest();
+
+//$api->campaignAbuseReports($newCamp);
+
+$api->campaignAdvice($newCamp);
