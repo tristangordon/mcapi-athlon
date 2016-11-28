@@ -95,40 +95,11 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
-
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response;
 	}
 
     function campaignSchedule($cid, $schedule_time, $schedule_time_b=NULL) {
@@ -146,42 +117,11 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = $this->callServer($json, $method);
+        $response = $responseObj['value'];
 
-        $response = json_decode($response);
-
-        print_r($response);
-
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response;
     }
 
     /**
@@ -199,7 +139,7 @@ class MCAPI {
     function campaignScheduleBatch($cid, $schedule_time, $num_batches=2, $stagger_mins=5) {
         $method = 'POST';
 
-        $endpoint = '/campaign/' . $cid . '/actions/schedule';
+        $endpoint = '/campaigns/' . $cid . '/actions/schedule';
         $url = $this->apiHost . $endpoint;
         $url = parse_url($url);
         $this->apiUrl = $url;
@@ -213,40 +153,13 @@ class MCAPI {
             )
         ]);  
         
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response;
     }
 
     /**
@@ -267,40 +180,13 @@ class MCAPI {
         $url = parse_url($url);
         $this->apiUrl = $url;
 
-        $info = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = json_decode($info);
+        $response = $responseObj['value'];
 
-        print_r($info);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        } 
+        return $response;
     }
 
 
@@ -322,40 +208,13 @@ class MCAPI {
         $url = parse_url($url);
         $this->apiUrl = $url;
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }  
+        return $response;
     }
 
     /**
@@ -379,41 +238,13 @@ class MCAPI {
         $url = parse_url($url);
         $this->apiUrl = $url;
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return true;
-        }  
+        return $response; 
     }
 
     /**
@@ -443,42 +274,13 @@ class MCAPI {
         $url = parse_url($url);
         $this->apiUrl = $url;
 
-        
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return true;
-        } 
+        return $response; 
     }
 
     /**
@@ -537,9 +339,9 @@ class MCAPI {
         $this->apiUrl = $url;
         //get info pertaining to the segment opts section of last previous campaignCreate function 
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
         print_r($response);
 
@@ -547,42 +349,13 @@ class MCAPI {
 
         echo ($response->id) ? "this campaigns id is: " . $response->id . "\n\n" : '';
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors && $response->id) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return $response->id;
-        } 
-
+        return $response->id;
     }
 
     /*
     *@param array $content an array containing the html and plain text for a specific campaign 
     *@param string $cid ID for the campaign being created
-    *@param return response object for use in the campaignCreate function
+    *@param return boolean
     */
     function setCampaignContent($content, $cid) {
         $method = 'PUT';
@@ -617,41 +390,13 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        print_r($responseObj['response']);
 
-        print_r($response);
+        $response = $responseObj['value'];
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return $response;
-        } 
+        return $response;
     }
 
     /** Update just about any setting for a campaign that has <em>not</em> been sent. See campaignCreate() for details.
@@ -697,39 +442,14 @@ class MCAPI {
                     $name => $value
                 )
             ));
+            
+            $responseObj = $this->callServer($json, $method);
 
-            $response = json_decode($this->callServer($json, $method));
-            print_r($response);
-            if ($response->errors || substr($response->status,0,1) === '4') {
-                $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-                $this->errorCode = $response->status; 
+            $response = $responseObj['value'];
 
-                echo "************************************************************************************\n\n";
-                echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-                echo "************************************************************************************\n\n";
+            print_r($responseObj['response']);
 
-                return false;
-            }
-
-            if ($response->errors || substr($response->status,0,1) === '5') {
-                $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-                $this->errorCode = $response->status;
-
-                echo "************************************************************************************\n\n";
-                echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-                echo "************************************************************************************\n\n";
-                
-                return false;
-            }
-
-            if (!$response->errors) {
-                echo "************************************************************************************\n\n";
-                echo "Successfully completed.\n\n";
-                echo "************************************************************************************\n\n";
-
-                return $response;
-            } 
-
+            return $response; 
         }
     }
 
@@ -752,41 +472,17 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $respBool = ($responseObj['value']) ? 'True' : 'False';
+
+        echo "The value of this function is: $respBool";
+
+        $response = $responseObj['response'];
 
         echo "\n\ncampaign id: " . $response->id . "\n\n"; 
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return $response->id;
-        } 
+        return $response->id;
     }
 
     /** Delete a campaign. Seriously, "poof, gone!" - be careful!
@@ -808,40 +504,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response; 
     }
 
     /**
@@ -924,41 +593,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        //print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1036,41 +677,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        //print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1096,43 +709,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        print_r($url);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($response);
-
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1161,6 +744,7 @@ class MCAPI {
      */
     function campaignEmailDomainPerformance($cid) {
         $method = 'GET';
+
         $endpoint = '/reports/' . $cid . '/domain-performance'; 
         $url = $this->apiHost . $endpoint;
         $url = parse_url($url);
@@ -1169,41 +753,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1233,41 +789,16 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
+        $response = json_decode(json_encode($response), true);
 
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
+        echo "The list Id for this campaign is: " . $response['recipients']['list_id'];
 
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            $info = json_decode(json_encode($response), true);
-
-            return $info['recipients']['list_id'];
-        }
+        return $response['recipients']['list_id'];
+        
     }
 
     function campaignMembers($cid, $status=NULL, $start=0, $limit=1000) {
@@ -1283,39 +814,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
+        print_r(json_decode(json_encode($response), true));
 
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1394,39 +899,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
+        print_r(json_decode(json_encode($response), true));
 
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1461,41 +940,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        //print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1522,43 +973,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        //print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            print_r(json_decode(json_encode($response), true));
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1688,45 +1109,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
-
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-
-            print_r(json_decode(json_encode($response), true));
-            
-            return json_decode(json_encode($response), true);
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1744,7 +1133,9 @@ class MCAPI {
     string message the entire bounce message received
      */
     function campaignBounceMessage($cid, $email) {
+        //**************************************************************FIGURE THIS ONE OUT FIRST*******************************************************************
         //probably associated with another end point and has a different name, find it - DEPRECATED.
+        //maybe this? - GET lists/list_id/members?status=cleaned may return only email without other information
         $method = 'GET';
         //$endpoint = '/reports/' . $cid .'/eepurl';
         $url = $this->apiHost . $endpoint;
@@ -1754,13 +1145,17 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        $respBool = ($responseObj['value']) ? 'true' : 'false';
 
-        print_r($url);
+        echo "This function's value is: $respBool";
+
+        print_r(json_decode(json_encode($response), true));
+
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1819,12 +1214,13 @@ class MCAPI {
      */
     function campaignEcommOrders($cid, $start=0, $limit=100, $since=NULL) {
         //as dj khaled would say, 'another one'. Must figure out proper endpoint
-        $params = array();
-        $params["cid"] = $cid;
-        $params["start"] = $start;
-        $params["limit"] = $limit;
-        $params["since"] = $since;
-        return $this->callServer("campaignEcommOrders", $params);
+        $this->errorMessage = "This function does not translate to an endpoint in the 3.0 api.";
+        $this->errorCode = 400; 
+
+        echo "************************************************************************************\n\n";
+        echo $this->errorCode . ": (" . $this->errorMessage . ")\n\n";
+        echo "************************************************************************************\n\n";
+        return false;
     }
 
     /**
@@ -1847,6 +1243,32 @@ class MCAPI {
     function campaignShareReport($cid, $opts=array (
     )) {
         //doesnt exist  
+        $method = 'GET';
+
+        $endpoint = '/reports/' . $cid; 
+        $url = $this->apiHost . $endpoint;
+        $url = parse_url($url);
+
+        $this->apiUrl = $url;
+
+        $json = json_encode(array());
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['response'];
+
+        $response = json_decode(json_encode($response), true);
+
+        $response = array(
+            'title' => $response['campaign_title'],
+            'url'   => $response['share_report']['share_url'],
+            'secure_url' => null,
+            'password' => $response['share_report']['share_password']
+        );
+
+        print_r($response);
+
+        return $response;
     }
 
     /**
@@ -1871,13 +1293,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        return $response;
+        return json_decode(json_encode($response), true);
     }
 
     function singleCampaign($cid) {
@@ -1891,13 +1313,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        return $response;
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1923,13 +1345,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        return $response;
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2078,13 +1500,17 @@ class MCAPI {
             )
         ));
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        $respBool = ($responseObj['value']) ? 'True' : 'False';
 
-        print_r($url);
+        echo "The value of this function is: $respBool";
+
+        print_r(json_decode(json_encode($response), true));
+
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2155,13 +1581,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2195,13 +1621,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2245,40 +1671,17 @@ class MCAPI {
             'type' => strtolower($tag)
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        $respBool = ($responseObj['Value']) ? "true" : "false";
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
+        echo "This function's value is: $respBool";
 
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
+        print_r(json_decode(json_encode($response), true));
 
-            return false;
-        }
-
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return false;
-        }
-
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);    
     }
 
     /**
@@ -4617,7 +4020,37 @@ class MCAPI {
 
             //var_dump(json_decode($result, true));
 
-            return $result;
+            $response = json_decode($result);
+
+            if ($response->errors || substr($response->status,0,1) === '4') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status; 
+
+            echo "************************************************************************************\n\n";
+            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+            echo "************************************************************************************\n\n";
+
+            return array('value' => false, 'response' => $response);
+        }
+
+        if ($response->errors || substr($response->status,0,1) === '5') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status;
+
+            echo "************************************************************************************\n\n";
+            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
+            echo "************************************************************************************\n\n";
+            
+            return array('value' => false, 'response' => $response);
+        }
+
+        if (!$response->errors) {
+            echo "************************************************************************************\n\n";
+            echo "Successfully completed.\n\n";
+            echo "************************************************************************************\n\n";
+
+            return array('value' => true, 'response' => $response);
+        } 
         }
 
         $sep_changed = false;
@@ -4709,7 +4142,38 @@ class MCAPI {
 
         echo "\n\n";
 
-        return $response;
+        $response = json_decode($response);
+
+        if ($response->errors || substr($response->status,0,1) === '4') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status; 
+
+            echo "************************************************************************************\n\n";
+            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+            echo "************************************************************************************\n\n";
+
+            return array('value' => false, 'response' => $response);
+        }
+
+        if ($response->errors || substr($response->status,0,1) === '5') {
+            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
+            $this->errorCode = $response->status;
+
+            echo "************************************************************************************\n\n";
+            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
+            echo "************************************************************************************\n\n";
+            
+            return array('value' => false, 'response' => $response);
+        }
+
+        if (!$response->errors) {
+            echo "************************************************************************************\n\n";
+            echo "Successfully completed.\n\n";
+            echo "************************************************************************************\n\n";
+
+            return array('value' => true, 'response' => $response);
+        } 
+
     }
 }
 
@@ -4784,7 +4248,15 @@ $values = array('name' => "tristanTEST2");
 
 //$api->campaignCreate("auto", $mc_options, $content, $segments, $type_opts=NULL);
 
-$newCamp = '623a8f0938';
+$newCamp = '12d5d5f9f2';
+
+//$api->campaignSendNow($newCamp);
+
+//$api->campaignSendTest($newCamp, array('tgordon@athlonsports.com'));
+
+//$api->campaignResume($newCamp);
+
+//$api->campaignPause($newCamp);
 
 //$api->campaignStats($api->campaignCreate("auto", $mc_options, $content, $segments, $type_opts=NULL));
 
@@ -4799,6 +4271,8 @@ $newCamp = '623a8f0938';
 //$api->campaignHardBounces($newCamp);
 
 //$api->campaignUnsubscribes($newCamp);
+
+//$api->campaignAbuseReports($newCamp);
 
 //$api->getCampaignListId($newCamp);
 
@@ -4818,7 +4292,7 @@ $newCamp = '623a8f0938';
 
 //$api->campaignUnschedule($newCamp);
 
-//$api->campaignDelete($extra);
+//$api->campaignDelete('06f9d84a6a');
 
 //$api->listStaticSegments($listId);
 
@@ -4828,13 +4302,15 @@ $newCamp = '623a8f0938';
 
 //$api->campaignResume($newCamp);
 
-//$api->campaignSchedule($newCamp, "2016-11-19T19:15:15+00:00");
+//$api->campaignScheduleBatch($newCamp, "2016-11-29T19:15:15+00:00");
+
+//$api->campaignSchedule($newCamp, "2016-11-29T19:15:15+00:00");
 
 //$api->campaignScheduleBatch($newCamp, "2016-11-15T19:13:00+00:00");
 
 //$api->campaignSendTest($newCamp, array("tgordon@athlonsports.com"));
 
-//$api->campaignUpdate($aCampaignId, "content", $contentTwo);
+//$api->campaignUpdate($newCamp, "content", $contentTwo);
 
 //$api->campaignUpdate($newCamp, "from_email", $contentThree);
 
@@ -4913,4 +4389,18 @@ $merge = array(
 
 //$api->campaignAbuseReports($newCamp);
 
-$api->campaignAdvice($newCamp);
+//$api->campaignAdvice($newCamp);
+
+//$api->campaigns();
+
+//$api->campaignEepUrlStats($newCamp);
+
+//$api->campaignContent($cid);
+
+//$api->singleCampaign($newCamp);
+
+//$api->campaignShareReport($newCamp);
+
+//$api->lists();
+
+$api->listMergeVars($listId);
