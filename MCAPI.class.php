@@ -1460,6 +1460,8 @@ class MCAPI {
         //continue to translate the parameters above into something that works with 3.0 api
         $method = 'POST';
 
+        $store_id = (array_key_exists('store_id', $order) ? $order['store_id'] : ''); 
+
         $endpoint = '/ecommerce/stores/' . $store_id . '/orders';
         $url = $this->apiHost . $endpoint;
         $url = parse_url($url);
@@ -1467,50 +1469,36 @@ class MCAPI {
         $this->apiUrl = $url;
 
         $json = json_encode(array(
-            'id'       => '',
+            'id'       => (array_key_exists('id', $order) ? $order['id'] : ''),
             'customer' => array(
-                'id' => ''
+                'id' => (array_key_exists('email_id', $order) ? $order['email_id'] : '')
             ),
-            'campaign_id' => '',
-            'order_total' => ''
-        ));
-
-        $json = json_encode( array(
-            'recipients' => array( 
-                'list_id'     => $options['list_id'],
-                'segment_opts' => array(
-                    'match'      => 'any',
-                    'conditions' => array( 
-                         array(
-                            'condition_type' => 'StaticSegment',
-                            'op'             => ($segment_opts['conditions'][0]['op'] == 'eq') ? 'static_is' : 'static_not',
-                            'field'          => $segment_opts['conditions'][0]['field'],
-                            'value'          => $segment_opts['conditions'][0]['value']
-                        )
-                    )
-                )
-            ), 
-        
-            'type'       => $type,
-            'settings'   => array(
-                'subject_line' => $options['subject'],
-                'reply_to'     => $options['from_email'],
-                'from_name'    => $options['from_name'],
-                'title'        => $options['title']
+            'campaign_id'    => (array_key_exists('campaign_id', $order) ? $order['campaign_id'] : ''),
+            'order_total'    => (array_key_exists('total', $order) ? $order['total'] : ''),
+            'shipping_total' => (array_key_exists('shipping', $order) ? $order['shipping'] : ''),
+            'tax_total'      => (array_key_exists('tax', $order) ? $order['tax'] : ''),
+            'lines'          => array(
+                'id'                 => (array_key_exists('product_id', $order['items']) ? $order['items']['product_id'] : ''),
+                'product_id'         => (array_key_exists('product_id', $order['items']) ? $order['items']['product_id'] : ''),
+                'product_variant_id' => (array_key_exists('product_id', $order['items']) ? $order['items']['product_id'] : ''),
+                'quantity'           => (array_key_exists('qty', $order['items']) ? $order['items']['qty'] : ''),
+                'price'              => (array_key_exists('cost', $order['items']) ? $order['items']['cost'] : '')
             )
         ));
 
-        $responseObj = $this->callServer($json, $method);
+        print_r($json);
 
-        $response = $responseObj['response'];
+        //$responseObj = $this->callServer($json, $method);
 
-        $respBool = ($responseObj['value']) ? 'True' : 'False';
+        //$response = $responseObj['response'];
 
-        echo "The value of this function is: $respBool";
+        //$respBool = ($responseObj['value']) ? 'True' : 'False';
 
-        print_r(json_decode(json_encode($response), true));
+        //echo "The value of this function is: $respBool";
 
-        return json_decode(json_encode($response), true);
+        //print_r(json_decode(json_encode($response), true));
+
+        //return json_decode(json_encode($response), true);
     }
 
     /**
@@ -1665,19 +1653,30 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
+        $type = $options['field_type'];
+
         $json = json_encode(array(
             'tag'  => $tag,
             'name' => $name,
-            'type' => strtolower($tag)
+            'type' => $type,
+            'required'      => (($options['req']) ? $options['req'] : false),
+            'public'        => (($options['public']) ? $options['public'] : true),
+            'display_order' => (($options['order']) ? $options['order'] : 0),
+            'default_value' => (($options['default_value']) ? $options['default_value'] : ''),
+            'options' => array(
+                'phone_format'    => (($options['phoneformat']) ? $options['phoneformat'] : ''),
+                'date_format'     => (($options['dateformat']) ? $options['dateformat'] : ''),    
+                'choices'         => (($options['choices']) ? $options['choices'] : array())
+            )
         ));
 
         $responseObj = $this->callServer($json, $method);
 
-        $response = $responseObj['response'];
-
-        $respBool = ($responseObj['Value']) ? "true" : "false";
+        $respBool = ($responseObj['value']) ? 'true' : 'false';
 
         echo "This function's value is: $respBool";
+
+        $response = $responseObj['response'];
 
         print_r(json_decode(json_encode($response), true));
 
@@ -1761,13 +1760,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true); 
     }
 
     /** Add a single Interest Group - if interest groups for the List are not yet enabled, adding the first
@@ -1795,13 +1794,29 @@ class MCAPI {
             'type'  => 'hidden'
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        print_r($url);
+        return $response; 
+    }
+
+    function getInterestCategoryId($id, $group_name) {
+        $interestGroupings = $this->listInterestGroupings($id);
+
+        $groupings = $interestGroupings['categories'];
+
+        
+        for($i = 0; $i < count($groupings); $i++) {
+            if ($groupings[$i]['title'] == $group_name) {
+                echo $groupings[$i]['id'];
+
+                return $groupings[$i]['id'];
+            }
+        }
+        
     }
 
     /** Delete a single Interest Group - if the last group for a list is deleted, this will also turn groups for the list off.
@@ -1817,7 +1832,8 @@ class MCAPI {
     function listInterestGroupDel($id, $group_name, $grouping_id=NULL) {
         $method = 'DELETE';
 
-        $icd = NULL; //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
+        //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
+        $icd = $this->getInterestCategoryId($id, $group_name); 
 
         $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
         $url = $this->apiHost . $endpoint;  
@@ -1826,17 +1842,15 @@ class MCAPI {
         $this->apiUrl = $url;
 
         $json = json_encode(array(
-            'title' => $group_name,
-            'type'  => 'hidden'
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        print_r($url);
+        return $response;
     }
 
     /** Change the name of an Interest Group
@@ -1852,7 +1866,8 @@ class MCAPI {
     function listInterestGroupUpdate($id, $old_name, $new_name, $grouping_id=NULL) {
         $method = 'PATCH';
 
-        $icd = NULL; //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
+        //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
+        $icd = $this->getInterestCategoryId($id, $group_name); 
 
         $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
         $url = $this->apiHost . $endpoint;  
@@ -1861,7 +1876,7 @@ class MCAPI {
         $this->apiUrl = $url;
 
         $json = json_encode(array(
-            'title' => $group_name,
+            'title' => $new_name,
             'type'  => 'hidden'
         ));
 
@@ -2015,7 +2030,7 @@ class MCAPI {
         $this->apiUrl = $url;
 
         $json = json_encode(array(
-            'url' => 'https://athlon-social.herokuapp.com/'
+            'url' => $url
         ));
 
         $response = $this->callServer($json, $method, true);
@@ -3990,9 +4005,10 @@ class MCAPI {
         $host = $this->apiUrl["host"];
         //$params["apikey"] = $this->api_key;
         //include cURL request since websocket doesnt return entire object for GET requests
+
         if (strtolower($method) == 'get') {
 
-            $thispath = 'https://' . $host . $this->apiUrl["path"] . (($this->apiUrl["query"]) ? '?' . $this->apiUrl["query"] : '');
+            $thispath = 'https://' . $host . $this->apiUrl["path"] . ((array_key_exists('query', $this->apiUrl)) ? '?' . $this->apiUrl["query"] : '');
 
             echo $thispath;
 
@@ -4002,7 +4018,7 @@ class MCAPI {
 
             $ch = curl_init();
 
-            curl_setopt($ch,CURLOPT_URL,'https://' . $host . $this->apiUrl["path"] . (($this->apiUrl["query"]) ? '?' . $this->apiUrl["query"] : '') );
+            curl_setopt($ch,CURLOPT_URL, $thispath);
             curl_setopt($ch, CURLOPT_USERPWD, 'user:' . $this->api_key);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
             //curl_setopt($ch, CURLOPT_HEADER, true);
@@ -4020,37 +4036,36 @@ class MCAPI {
 
             //var_dump(json_decode($result, true));
 
-            $response = json_decode($result);
+            $response = json_decode($result);   
 
-            if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
+            if (property_exists($response , 'status')) {
+                if(substr($response->status,0,1) === '4' || substr($response->status,0,1) === '5') {
+                    $this->errorMessage = $response->detail;
+                    $this->errorCode = $response->status; 
 
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
+                    echo "************************************************************************************\n\n";
+                    echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+                    echo "************************************************************************************\n\n";
 
-            return array('value' => false, 'response' => $response);
-        }
+                    return array('value' => false, 'response' => $response);
+                }
 
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
+                else {
+                    echo "************************************************************************************\n\n";
+                    echo "Successfully completed.\n\n";
+                    echo "************************************************************************************\n\n";
 
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return array('value' => false, 'response' => $response);
-        }
+                    return array('value' => true, 'response' => $response);
+                }
+            }
 
-        if (!$response->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
+            else {
+                echo "************************************************************************************\n\n";
+                echo "Successfully completed.\n\n";
+                echo "************************************************************************************\n\n";
 
-            return array('value' => true, 'response' => $response);
-        } 
+                return array('value' => true, 'response' => $response);
+            } 
         }
 
         $sep_changed = false;
@@ -4144,29 +4159,37 @@ class MCAPI {
 
         $response = json_decode($response);
 
-        if ($response->errors || substr($response->status,0,1) === '4') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status; 
-
-            echo "************************************************************************************\n\n";
-            echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
-            echo "************************************************************************************\n\n";
-
-            return array('value' => false, 'response' => $response);
+        //for the functions that DELETE and don't return objects, otherwise it will error at the "property exist" function
+        if (empty($response)) { 
+            return array('value' => true, 'response' => $response);
         }
 
-        if ($response->errors || substr($response->status,0,1) === '5') {
-            $this->errorMessage = ($response->errors) ? $response->errors[0]->message : $response->detail;
-            $this->errorCode = $response->status;
-
-            echo "************************************************************************************\n\n";
-            echo "There is an error on mailchimp's side. Contact apihelp@mailchimp.com \n\n";
-            echo "************************************************************************************\n\n";
-            
-            return array('value' => false, 'response' => $response);
+        else { 
+             
         }
 
-        if (!$response->errors) {
+        if (property_exists($response , 'status')) {
+            if(substr($response->status,0,1) === '4' || substr($response->status,0,1) === '5') {
+                $this->errorMessage = $response->detail;
+                $this->errorCode = $response->status; 
+
+                echo "************************************************************************************\n\n";
+                echo $this->errorCode . ': (' . $this->errorMessage .")\n\n";
+                echo "************************************************************************************\n\n";
+
+                return array('value' => false, 'response' => $response);
+            }
+
+            else {
+                echo "************************************************************************************\n\n";
+                echo "Successfully completed.\n\n";
+                echo "************************************************************************************\n\n";
+
+                return array('value' => true, 'response' => $response);
+            }
+        }
+
+        else {
             echo "************************************************************************************\n\n";
             echo "Successfully completed.\n\n";
             echo "************************************************************************************\n\n";
@@ -4220,7 +4243,6 @@ $batchTwo =  array(
                     'email_address' => 'batchtest@athlonsports.com',
                     'email_type'    => 'html',
                     'status'        => 'subscribed'
-
                 ),
                 array(
                     'email_address' => 'batchtest1@athlonsports.com',
@@ -4363,7 +4385,11 @@ $merge = array(
 
 //$api->listStaticSegmentMembersDel($listId, $seg_id, $batch);
 
-//$api->listInterestGroupAdd($listId, 'testing');
+$api->listInterestGroupAdd($listId, "NarutosNindo");
+
+//$api->listInterestGroupDel($listId, "NarutosNindo");
+
+//$api->listInterestGroupUpdate($listId, "NarutosNindo", "NarutoHokage");
 
 //$api->listMergeVarAdd($listId);
 
@@ -4403,4 +4429,41 @@ $merge = array(
 
 //$api->lists();
 
-$api->listMergeVars($listId);
+$mergeOp = array(
+            'field_type'     => 'dropdown',
+            'req'            => true,
+            'public'         => true,
+            'order'          => 2,
+            'default_value'  => 'default',
+            'choices'        => array('first name','last name','middle name'),
+            'phoneformat'    => 'US'
+        );
+
+$mergeOps = array('field_type' => 'text');
+
+//$api->listMergeVarAdd($listId, "DNAME", "dude name", $mergeOp);
+
+//$api->listMergeVars($listId);
+
+
+$order = array(
+    'id' => '120',
+    'email_id' => md5(strtolower('tgordon@tdgordon.com')),
+    'total' => .02,
+    'store_id' => '12as234ed',
+    'campaign_id' => '123ed145a',
+    'items' => array(
+        'line_num' => '12',
+        'product_id' => '123we',
+        'sku' => '128329182',
+        'product_name' => 'test',
+        'qty' => 3,
+        'cost' => 12
+    )
+);
+
+//$api->campaignEcommOrderAdd($order);
+
+//$api->lists();
+
+//$api->listInterestGroupings($listId);
