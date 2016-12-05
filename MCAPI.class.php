@@ -1731,6 +1731,164 @@ class MCAPI {
         //this does not translate to any of the current endpoints
     }
 
+    //grabs the first grouping id to properly emulate functionality from v1.3 api
+    function getFirstGroupingId ($id) {
+        $interestGroupings = $this->listInterestGroupings($id);
+
+        $groupings = $interestGroupings['categories'];
+
+        return $groupings[0]['id'];
+    }
+
+    /** Add a single Interest Group - if interest groups for the List are not yet enabled, adding the first
+     *  group will automatically turn them on.
+     *
+     * @section List Related
+     * @example xml-rpc_listInterestGroupAdd.php
+     *
+     * @param string $id the list id to connect to. Get by calling lists()
+     * @param string $group_name the interest group to add - group names must be unique within a grouping
+     * @param int $grouping_id optional The grouping to add the new group to - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
+     * @return bool true if the request succeeds, otherwise an error will be thrown
+     */
+    function listInterestGroupAdd($id, $group_name, $grouping_id=NULL) {
+        $method = "POST";
+
+        $icd = (is_null($grouping_id)) ? $this->getFirstGroupingId($id) : $grouping_id;
+
+        $endpoint= "/lists/" . $id . "/interest-categories/" . $icd . "/interests";
+        $url = $this->apiHost . $endpoint;  
+        $url = parse_url($url);
+
+        $this->apiUrl = $url;
+
+        $json = json_encode(array(
+            'name' => $group_name
+        ));
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['value'];
+
+        print_r($responseObj['response']);
+
+        return $response;
+    }
+
+    //this grabs the interest id to be used in the 
+    function getInterestGroupId($id, $icd, $group_name=NULL) {
+        $method = 'GET';
+
+        $endpoint = '/lists/' . $id . '/interest-categories/' . $icd . "/interests";
+        $url = $this->apiHost . $endpoint;
+        $url = parse_url($url);
+
+        $this->apiUrl = $url;
+
+        $json = json_encode(array());
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['response'];
+
+        $response = json_decode(json_encode($response), true);
+
+        print_r($response);
+
+        $groups = $response['interests'];
+
+        for($i = 0; $i < count($groups); $i++) {
+            if ($groups[$i]['name'] == $group_name) {
+                return $groups[$i]['id'];
+            }
+        }
+    }
+
+    /** Delete a single Interest Group - if the last group for a list is deleted, this will also turn groups for the list off.
+     *
+     * @section List Related
+     * @example xml-rpc_listInterestGroupDel.php
+     *
+     * @param string $id the list id to connect to. Get by calling lists()
+     * @param string $group_name the interest group to delete
+     * @param int $grouping_id The grouping to delete the group from - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
+     * @return bool true if the request succeeds, otherwise an error will be thrown
+     */
+    function listInterestGroupDel($id, $group_name, $grouping_id=NULL) {
+        $method = "DELETE";
+
+        $icd = (is_null($grouping_id)) ? $this->getFirstGroupingId($id) : $grouping_id;
+
+        $iid = $this->getInterestGroupId($id, $icd, $group_name);
+
+        $endpoint= "/lists/" . $id . "/interest-categories/" . $icd . "/interests/" . $iid;
+        $url = $this->apiHost . $endpoint;  
+        $url = parse_url($url);
+
+        $this->apiUrl = $url;
+
+        $json = json_encode(array(
+        ));
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['value'];
+
+        print_r($responseObj['response']);
+
+        return $response;
+    }
+
+    /** Change the name of an Interest Group
+     *
+     * @section List Related
+     *
+     * @param string $id the list id to connect to. Get by calling lists()
+     * @param string $old_name the interest group name to be changed
+     * @param string $new_name the new interest group name to be set
+     * @param int $grouping_id optional The grouping to delete the group from - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
+     * @return bool true if the request succeeds, otherwise an error will be thrown
+     */
+    function listInterestGroupUpdate($id, $old_name, $new_name, $grouping_id=NULL) {
+        $method = "PATCH";
+
+        $icd = (is_null($grouping_id)) ? $this->getFirstGroupingId($id) : $grouping_id;
+
+        $iid = $this->getInterestGroupId($id, $icd, $old_name);
+
+        $endpoint= "/lists/" . $id . "/interest-categories/" . $icd . "/interests/" . $iid;
+        $url = $this->apiHost . $endpoint;  
+        $url = parse_url($url);
+
+        $this->apiUrl = $url;
+
+        $json = json_encode(array(
+            'name' => $new_name
+        ));
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['value'];
+
+        print_r($responseObj['response']);
+
+        return $response;
+    }
+
+    function getInterestCategoryId($id, $group_name) {
+        $interestGroupings = $this->listInterestGroupings($id);
+
+        $groupings = $interestGroupings['categories'];
+
+        
+        for($i = 0; $i < count($groupings); $i++) {
+            if ($groupings[$i]['title'] == $group_name) {
+                return $groupings[$i]['id'];
+            }
+        }
+        
+    }
+
     /**
      * Get the list of interest groupings for a given list, including the label, form information, and included groups for each
      *
@@ -1769,18 +1927,19 @@ class MCAPI {
         return json_decode(json_encode($response), true); 
     }
 
-    /** Add a single Interest Group - if interest groups for the List are not yet enabled, adding the first
-     *  group will automatically turn them on.
+    /** Add a new Interest Grouping - if interest groups for the List are not yet enabled, adding the first
+     *  grouping will automatically turn them on.
      *
      * @section List Related
-     * @example xml-rpc_listInterestGroupAdd.php
+     * @example xml-rpc_listInterestGroupingAdd.php
      *
      * @param string $id the list id to connect to. Get by calling lists()
-     * @param string $group_name the interest group to add - group names must be unique within a grouping
-     * @param int $grouping_id optional The grouping to add the new group to - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
-     * @return bool true if the request succeeds, otherwise an error will be thrown
+     * @param string $name the interest grouping to add - grouping names must be unique
+     * @param string $type The type of the grouping to add - one of "checkboxes", "hidden", "dropdown", "radio"
+     * @param array $groups The lists of initial group names to be added - at least 1 is required and the names must be unique within a grouping. If the number takes you over the 60 group limit, an error will be thrown.
+     * @return int the new grouping id if the request succeeds, otherwise an error will be thrown
      */
-    function listInterestGroupAdd($id, $group_name, $grouping_id=NULL) {
+    function listInterestGroupingAdd($id, $name, $type, $groups) {
         $method = 'POST';
 
         $endpoint = '/lists/' . $id . '/interest-categories';
@@ -1803,33 +1962,56 @@ class MCAPI {
         return $response; 
     }
 
-    function getInterestCategoryId($id, $group_name) {
-        $interestGroupings = $this->listInterestGroupings($id);
+    function getGroupingListId () {
 
-        $groupings = $interestGroupings['categories'];
-
-        
-        for($i = 0; $i < count($groupings); $i++) {
-            if ($groupings[$i]['title'] == $group_name) {
-                echo $groupings[$i]['id'];
-
-                return $groupings[$i]['id'];
-            }
-        }
-        
     }
 
-    /** Delete a single Interest Group - if the last group for a list is deleted, this will also turn groups for the list off.
+    /** Update an existing Interest Grouping
      *
      * @section List Related
-     * @example xml-rpc_listInterestGroupDel.php
+     * @example xml-rpc_listInterestGroupingUpdate.php
      *
-     * @param string $id the list id to connect to. Get by calling lists()
-     * @param string $group_name the interest group to delete
-     * @param int $grouping_id The grouping to delete the group from - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
+     * @param int $grouping_id the interest grouping id - get from listInterestGroupings()
+     * @param string $name The name of the field to update - either "name" or "type". Groups with in the grouping should be manipulated using the standard listInterestGroup* methods
+     * @param string $value The new value of the field. Grouping names must be unique - only "hidden" and "checkboxes" grouping types can be converted between each other.
      * @return bool true if the request succeeds, otherwise an error will be thrown
      */
-    function listInterestGroupDel($id, $group_name, $grouping_id=NULL) {
+        function listInterestGroupingUpdate($grouping_id, $name, $value) {
+            //will have to store each interest category aka 'grouping' with its corresponding list id (and grouping id if wanted)
+            $method = 'PATCH';
+
+            $icd = $grouping_id; 
+
+            $name = ($name == 'name') ? 'title' : $name;
+
+            $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
+            $url = $this->apiHost . $endpoint;  
+            $url = parse_url($url);
+
+            $this->apiUrl = $url;
+
+            $json = json_encode(array(
+                $name => $value
+            ));
+
+            $responseObj = $this->callServer($json, $method);
+
+            $response = $responseObj['value'];
+
+            print_r($responseObj['response']);
+
+            return $response;
+        }
+
+    /** Delete an existing Interest Grouping - this will permanently delete all contained interest groups and will remove those selections from all list members
+     *
+     * @section List Related
+     * @example xml-rpc_listInterestGroupingDel.php
+     *
+     * @param int $grouping_id the interest grouping id - get from listInterestGroupings()
+     * @return bool true if the request succeeds, otherwise an error will be thrown
+     */
+    function listInterestGroupingDel($grouping_id) {
         $method = 'DELETE';
 
         //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
@@ -1851,84 +2033,6 @@ class MCAPI {
         print_r($responseObj['response']);
 
         return $response;
-    }
-
-    /** Change the name of an Interest Group
-     *
-     * @section List Related
-     *
-     * @param string $id the list id to connect to. Get by calling lists()
-     * @param string $old_name the interest group name to be changed
-     * @param string $new_name the new interest group name to be set
-     * @param int $grouping_id optional The grouping to delete the group from - get using listInterestGrouping() . If not supplied, the first grouping on the list is used.
-     * @return bool true if the request succeeds, otherwise an error will be thrown
-     */
-    function listInterestGroupUpdate($id, $old_name, $new_name, $grouping_id=NULL) {
-        $method = 'PATCH';
-
-        //this will use the listInterestsGroup to grab the proper interest category id for use as a url parameter
-        $icd = $this->getInterestCategoryId($id, $group_name); 
-
-        $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
-        $url = $this->apiHost . $endpoint;  
-        $url = parse_url($url);
-
-        $this->apiUrl = $url;
-
-        $json = json_encode(array(
-            'title' => $new_name,
-            'type'  => 'hidden'
-        ));
-
-        $response = $this->callServer($json, $method, true);
-
-        $response = json_decode($response, true);
-
-        print_r($response);
-
-        print_r($url);
-    }
-
-    /** Add a new Interest Grouping - if interest groups for the List are not yet enabled, adding the first
-     *  grouping will automatically turn them on.
-     *
-     * @section List Related
-     * @example xml-rpc_listInterestGroupingAdd.php
-     *
-     * @param string $id the list id to connect to. Get by calling lists()
-     * @param string $name the interest grouping to add - grouping names must be unique
-     * @param string $type The type of the grouping to add - one of "checkboxes", "hidden", "dropdown", "radio"
-     * @param array $groups The lists of initial group names to be added - at least 1 is required and the names must be unique within a grouping. If the number takes you over the 60 group limit, an error will be thrown.
-     * @return int the new grouping id if the request succeeds, otherwise an error will be thrown
-     */
-    function listInterestGroupingAdd($id, $name, $type, $groups) {
-        //find out if 'groupings' is the same as /lists/{list_id}/interest-categories/{interest_category_id}/interests
-    }
-
-    /** Update an existing Interest Grouping
-     *
-     * @section List Related
-     * @example xml-rpc_listInterestGroupingUpdate.php
-     *
-     * @param int $grouping_id the interest grouping id - get from listInterestGroupings()
-     * @param string $name The name of the field to update - either "name" or "type". Groups with in the grouping should be manipulated using the standard listInterestGroup* methods
-     * @param string $value The new value of the field. Grouping names must be unique - only "hidden" and "checkboxes" grouping types can be converted between each other.
-     * @return bool true if the request succeeds, otherwise an error will be thrown
-     */
-    function listInterestGroupingUpdate($grouping_id, $name, $value) {
-        //find out if 'groupings' is the same as /lists/{list_id}/interest-categories/{interest_category_id}/interests
-    }
-
-    /** Delete an existing Interest Grouping - this will permanently delete all contained interest groups and will remove those selections from all list members
-     *
-     * @section List Related
-     * @example xml-rpc_listInterestGroupingDel.php
-     *
-     * @param int $grouping_id the interest grouping id - get from listInterestGroupings()
-     * @return bool true if the request succeeds, otherwise an error will be thrown
-     */
-    function listInterestGroupingDel($grouping_id) {
-        //find out if 'groupings' is the same as /lists/{list_id}/interest-categories/{interest_category_id}/interests
     }
 
     /** Return the Webhooks configured for the given list
@@ -1961,13 +2065,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true); 
     }
 
     /** Add a new Webhook URL for the given list
@@ -1992,23 +2096,36 @@ class MCAPI {
     function listWebhookAdd($id, $url, $actions=array (), $sources=array ()) {
         $method = 'POST';
 
-        $endpoint = '/lists/' . $id . '/webhooks';
-        $url = $this->apiHost . $endpoint;
-        $url = parse_url($url);
+        $endpoint = '/lists/' . $id . '/webhooks/' . $wid;
+        $apiUrl = $this->apiHost . $endpoint;
+        $apiUrl = parse_url($apiUrl);
 
-        $this->apiUrl = $url;
+        $this->apiUrl = $apiUrl;
 
         $json = json_encode(array(
-            'url' => $url
+            'url'     => $url,
+            'events'  => $actions,
+            'sources' => $sources
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
+    }
+
+    function getWebhookId($id, $url) {
+        $listWebhooks = $this->listWebhooks($id);
+
+        for ($i = 0; $i < count($listWebhooks); $i++) {
+            if ($listWebhooks['webhooks'][$i]['url'] == $url) {
+                
+                return $listWebhooks['webhooks'][$i]['id'];
+            }
+        }
     }
 
     /** Delete an existing Webhook URL from a given list
@@ -2022,24 +2139,20 @@ class MCAPI {
     function listWebhookDel($id, $url) {
         $method = 'DELETE';
 
-        $wid = NULL; //this will be the id found by using the $url parameter to loop through the list webhooks object and grab the webhook id for use in the endpoint
-        $endpoint = '/lists/' . $id . '/webhooks' . $wid;
-        $url = $this->apiHost . $endpoint;
-        $url = parse_url($url);
+        $wid = $this->getWebhookId($id, $url); //this will be the id found by using the $url parameter to loop through the list webhooks object and grab the webhook id for use in the endpoint
+        $endpoint = '/lists/' . $id . '/webhooks/' . $wid;
+        $apiUrl = $this->apiHost . $endpoint;
+        $apiUrl = parse_url($apiUrl);
 
-        $this->apiUrl = $url;
+        $this->apiUrl = $apiUrl;
 
-        $json = json_encode(array(
-            'url' => $url
-        ));
+        $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['value'];
 
-        print_r($response);
-
-        print_r($url);
+        print_r($responseObj['response']);
     }
 
     /** Retrieve all of the Static Segments for a list.
@@ -2060,20 +2173,20 @@ class MCAPI {
 
         $endpoint = '/lists/' . $id . '/segments';
         $url = $this->apiHost . $endpoint;
-        $url = $url . '?count=20';
+        $url = $url . '?count=999999';
         $url = parse_url($url);
 
         $this->apiUrl = $url;
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /** Save a segment against a list for later use. There is no limit to the number of segments which can be saved. Static Segments <strong>are not</strong> tied
@@ -4385,11 +4498,13 @@ $merge = array(
 
 //$api->listStaticSegmentMembersDel($listId, $seg_id, $batch);
 
-$api->listInterestGroupAdd($listId, "NarutosNindo");
+//$api->listInterestGroupAdd($listId, "NarutosNindo");
 
-//$api->listInterestGroupDel($listId, "NarutosNindo");
+//$api->listInterestGroupDel($listId, "NarutoHokage");
 
 //$api->listInterestGroupUpdate($listId, "NarutosNindo", "NarutoHokage");
+
+//$api->readListInterestGroupNames($listId, "NarutosNindo");
 
 //$api->listMergeVarAdd($listId);
 
@@ -4467,3 +4582,34 @@ $order = array(
 //$api->lists();
 
 //$api->listInterestGroupings($listId);
+
+//$api->listInterestGroupAdd($listId, "chunin");
+
+//$api->getInterestGroupId($listId, '57c20e68d7');
+
+//$api->listInterestGroupDel($listId, "chunin", '57c20e68d7');
+
+//$api->listInterestGroupUpdate($listId, "kakashi_jonin", "Jonin", '57c20e68d7');
+
+//$api->listInterestGroupingUpdate('57c20e68d7', 'name', "NarutosNinjaWay");
+
+$api->listWebhooks($listId);
+
+//$api->getWebhookId($listId, "https://athlon-social.herokuapp.com/");
+
+//$api->listWebhookDel($listId, "https://athlon-social.herokuapp.com/");
+
+$laActions = array(
+    'subscribe' => true,
+    'profile'   => true,
+    'campaign'  => false
+);
+
+$laSources = array(
+    'user' => false,
+    'api'  => true
+);
+
+//$api->listWebhookAdd($listId, "http://www.doodtrxstan.com", $laActions, $laSources);
+
+$api->listStaticSegments($listId);
