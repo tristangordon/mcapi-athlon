@@ -1,5 +1,5 @@
 <?php 
-//Athon Sports Mailchimp 3.0 Class by Tristan Gordon
+//Athlon Sports Mailchimp 3.0 Class by Tristan Gordon
 
 //campaignSegmentTest doesnt translate
 //check out the failsafe for the updateCampaign function...is it thorough enough?
@@ -1557,12 +1557,17 @@ class MCAPI {
     double click_rate the average click rate per campaign for the list  (empty value if we haven't calculated this yet)
     array modules Any list specific modules installed for this list (example is SocialPro)
      */
+
+    
+
+
     function lists($filters=array (
     ), $start=0, $limit=25, $sort_field='created', $sort_dir='DESC') {
         $method = 'GET';
 
         $endpoint = '/lists';
         $url = $this->apiHost . $endpoint;
+        $url = $url . '?count=' . $limit . '&offset=' . $start;
         $url = parse_url($url);
 
         $this->apiUrl = $url;
@@ -1573,9 +1578,65 @@ class MCAPI {
 
         $response = $responseObj['response'];
 
-        print_r(json_decode(json_encode($response), true));
+        $response = json_decode(json_encode($response), true);
 
-        return json_decode(json_encode($response), true);
+        //print_r($response);
+
+
+        //return json_decode(json_encode($response), true);
+
+        $formatResponse = array(
+            'total' => $response['total_items'],
+            'data' => array(
+            )
+        );
+
+        $listData = $response['lists'];
+
+        for ($i = 0; $i < count($listData); $i++) {
+            $list = array(
+                'id' => $listData[$i]['id'],
+                'web_id' => $listData[$i]['id'],
+                'name' => $listData[$i]['name'],
+                'date_created' => $listData[$i]['date_created'],
+                'email_type_option' => $listData[$i]['email_type_option'],
+                'use_awesomebar' => $listData[$i]['use_archive_bar'],
+                'default_from_name' => $listData[$i]['campaign_defaults']['from_name'],
+                'default_from_email' => $listData[$i]['campaign_defaults']['from_email'],
+                'default_subject' => $listData[$i]['campaign_defaults']['subject'],
+                'default_language' => $listData[$i]['campaign_defaults']['language'],
+                'list_rating' => $listData[$i]['list_rating'],
+                'subscribe_url_short' => $listData[$i]['subscribe_url_short'],
+                'subscribe_url_long' => $listData[$i]['subscribe_url_long'],
+                'beamer_address' => $listData[$i]['beamer_address'],
+                'visibility' => $listData[$i]['visibility'],
+                'stats' => array(
+                    'member_count' => $listData[$i]['stats']['member_count'],
+                    'unsubscribe_count' => $listData[$i]['stats']['unsubscribe_count'],
+                    'cleaned_count' => $listData[$i]['stats']['cleaned_count'],
+                    'member_count_since_send' => $listData[$i]['stats']['member_count_since_send'],
+                    'unsubscribe_count_since_send' => $listData[$i]['stats']['unsubscribe_count_since_send'],
+                    'cleaned_count_since_send' => $listData[$i]['stats']['cleaned_count_since_send'],
+                    'campaign_count' => $listData[$i]['stats']['campaign_count'],
+                    'grouping_count' => 0, //are the values important? They don't translate
+                    'group_count' => 0, //are the values important? They don't translate
+                    'merge_var_count' => $listData[$i]['stats']['merge_field_count'],
+                    'avg_sub_rate' => $listData[$i]['stats']['avg_sub_rate'],
+                    'avg_unsub_rate' => $listData[$i]['stats']['avg_unsub_rate'],
+                    'target_sub_rate' => $listData[$i]['stats']['target_sub_rate'],
+                    'open_rate' => $listData[$i]['stats']['open_rate'],
+                    'click_rate' => $listData[$i]['stats']['click_rate']
+                ),
+                'modules' => $listData[$i]['modules']
+            );
+
+        array_push($formatResponse['data'], $list);
+
+        }
+
+        print_r($formatResponse);
+
+        return $formatResponse;
     }
 
     /**
@@ -1976,32 +2037,32 @@ class MCAPI {
      * @param string $value The new value of the field. Grouping names must be unique - only "hidden" and "checkboxes" grouping types can be converted between each other.
      * @return bool true if the request succeeds, otherwise an error will be thrown
      */
-        function listInterestGroupingUpdate($grouping_id, $name, $value) {
-            //will have to store each interest category aka 'grouping' with its corresponding list id (and grouping id if wanted)
-            $method = 'PATCH';
+    function listInterestGroupingUpdate($grouping_id, $name, $value) {
+        //will have to store each interest category aka 'grouping' with its corresponding list id (and grouping id if wanted)
+        $method = 'PATCH';
 
-            $icd = $grouping_id; 
+        $icd = $grouping_id; 
 
-            $name = ($name == 'name') ? 'title' : $name;
+        $name = ($name == 'name') ? 'title' : $name;
 
-            $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
-            $url = $this->apiHost . $endpoint;  
-            $url = parse_url($url);
+        $endpoint = '/lists/' . $id . '/interest-categories/' . $icd;
+        $url = $this->apiHost . $endpoint;  
+        $url = parse_url($url);
 
-            $this->apiUrl = $url;
+        $this->apiUrl = $url;
 
-            $json = json_encode(array(
-                $name => $value
-            ));
+        $json = json_encode(array(
+            $name => $value
+        ));
 
-            $responseObj = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-            $response = $responseObj['value'];
+        $response = $responseObj['value'];
 
-            print_r($responseObj['response']);
+        print_r($responseObj['response']);
 
-            return $response;
-        }
+        return $response;
+    }
 
     /** Delete an existing Interest Grouping - this will permanently delete all contained interest groups and will remove those selections from all list members
      *
@@ -2214,13 +2275,13 @@ class MCAPI {
             'static_segment' => array()
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /** Resets a static segment - removes <strong>all</strong> members from the static segment. Note: does not actually affect list member data
@@ -2254,13 +2315,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['value'];
 
-        print_r($response);
+        print_r($responseObj['response']);
 
-        print_r($url);
+        return $response;
     }
 
     /** Add list members to a static segment. It is suggested that you limit batch size to no more than 10,000 addresses per call. Email addresses must exist on the list
@@ -2291,13 +2352,13 @@ class MCAPI {
             'members_to_add' => $batch
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /** Remove list members from a static segment. It is suggested that you limit batch size to no more than 10,000 addresses per call. Email addresses must exist on the list
@@ -2328,13 +2389,13 @@ class MCAPI {
             'members_to_remove' => $batch
         ));
 
-        $response = $this->callServer($json, $method, true);
+        $responseObj = $this->callServer($json, $method);
 
-        $response = json_decode($response, true);
+        $response = $responseObj['response'];
 
-        print_r($response);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($url);
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2382,21 +2443,15 @@ class MCAPI {
      * @param bool $send_welcome optional if your double_optin is false and this is true, we will send your lists Welcome Email if this subscribe succeeds - this will *not* fire if we end up updating an existing subscriber. If double_optin is true, this has no effect. defaults to false.
      * @return boolean true on success, false on failure. When using MCAPI.class.php, the value can be tested and error messages pulled from the MCAPI object (see below)
      */
-    function listSubscribe($id, $email_address, $merge_vars=NULL, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false) {
+    function listSubscribe($id, $email_address, $merge_vars=[], $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false) {
         $method = "PUT";
 
         $json = json_encode( array(
             'email_type'    => $email_type,
             'email_address' => $email_address,
-            'status'        => 'subscribed', // "subscribed","unsubscribed","cleaned","pending"
-            'merge_fields'  => $merge_vars,
-            //'status_if_new' => 'subscribed'
+            'status'        => 'subscribed',//"subscribed","unsubscribed","cleaned","pending"
+            'merge_fields'  =>(object) $merge_vars
         ));
-
-        //'merge_fields'  => array(
-        //    'FNAME'     => $data['firstname'],
-        //    'LNAME'     => $data['lastname']
-        //)
         
         $memberId = md5(strtolower($email_address));
 
@@ -2407,29 +2462,13 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        print_r($json);
+        $response = $responseObj['response'];
 
-        $info = $this->callServer($json, $method);
+        print_r(json_decode(json_encode($response), true));
 
-        $info = json_decode($info);
-
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2451,10 +2490,8 @@ class MCAPI {
         $method = "PUT";
 
         $json = json_encode( array(
-            'email_type'    => $email_type,
             'email_address' => $email_address,
             'status'        => 'unsubscribed', // "subscribed","unsubscribed","cleaned","pending"
-            'merge_fields'  => $merge_vars
         ));
         
         $memberId = md5(strtolower($email_address));
@@ -2466,29 +2503,13 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        print_r($json);
+        $response = $responseObj['response'];
 
-        $info = $this->callServer($json, $method);
+        print_r(json_decode(json_encode($response), true));
 
-        $info = json_decode($info);
-
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2512,7 +2533,6 @@ class MCAPI {
         $json = json_encode( array(
             'email_type'    => $email_type,
             'email_address' => $email_address,
-            'status'        => 'unsubscribed', // "subscribed","unsubscribed","cleaned","pending"
             'merge_fields'  => $merge_vars
         ));
         
@@ -2525,29 +2545,13 @@ class MCAPI {
 
         $this->apiUrl = $url;
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        print_r($json);
+        $response = $responseObj['value'];
 
-        $info = $this->callServer($json, $method);
+        print_r($responseObj['response']);
 
-        $info = json_decode($info);
-
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response;
     }
 
     /**
@@ -2574,6 +2578,7 @@ class MCAPI {
     int code the error code
     string message the full error message
      */
+
     function listBatchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true) {
         //placing the batch parameter should be enough, as it is supposed to include objects that hold the 'email' and 'email_type' request params
         //must figure out how to differentiate bewteen subscribe and unsubscribe. Must add 'status' parameter somehow
@@ -2583,35 +2588,43 @@ class MCAPI {
         $endpoint = '/lists/' . $id;
         
         $url = $this->apiHost . $endpoint;
-        $url = parse_url($url);
+        $url = parse_url($url); 
 
         $this->apiUrl = $url;
 
-        $json = json_encode(array(
-            'members' => $batch
-        ));
+        $batchGroup = array(
+            'members' => array(
 
-        print_r($json);
+            ),
+            'update_existing' => $update_existing
+        );    
 
-        $info = $this->callServer($json, $method);
+        for ($i = 0; $i < count($batch); $i++) {
+            $mem = array (
+                'email_address' => (empty($batch[$i]['EMAIL'])) ? '' : $batch[$i]['EMAIL'],
+                'status' => 'subscribed',
+                'merge_fields' => array(
+                    'FNAME' => (empty($batch[$i]['FNAME'])) ? '' : $batch[$i]['FNAME'],
+                    'LNAME' => (empty($batch[$i]['LNAME'])) ? '' : $batch[$i]['LNAME'],
+                    'LOGIN_URL' => (empty($batch[$i]['LOGIN_URL'])) ? '' : $batch[$i]['LOGIN_URL'],
+                    //'GROUPINGS' => (empty($batch[$i]['GROUPINGS'])) ? '' : $batch[$i]['GROUPINGS'] 
+                )
+            );
 
-        $info = json_decode($info);
-
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
+            array_push($batchGroup['members'], $mem);
         }
 
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        print_r($batchGroup);
+
+        $json = json_encode($batchGroup);
+
+        $responseObj = $this->callServer($json, $method);
+
+        $response = $responseObj['response'];
+
+        print_r(json_decode(json_encode($response), true));
+
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2652,28 +2665,7 @@ class MCAPI {
             'members' => $batch
         ));
 
-        print_r($json);
-
-        $info = $this->callServer($json, $method);
-
-        $info = json_decode($info);
-
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
-    }
+            }
 
     /**
      * Get all of the list members for a list that are of a particular status. Are you trying to get a dump including lots of merge
@@ -2715,27 +2707,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2793,6 +2771,35 @@ class MCAPI {
      */
     function listMemberInfo($id, $email_address) {
         //maybe a batch request to /lists/{id}/members/{sub_hash} ?
+        
+        $respArray = array();
+
+        for($i = 0; $i < count($email_address); $i++) {
+            $method = "GET";
+
+            $memberId = md5(strtolower($email_address[$i]));
+
+            $endpoint = '/lists/' . $id . '/members/' . $memberId;
+            
+            $url = $this->apiHost . $endpoint;
+
+            $url = parse_url($url);
+
+            $this->apiUrl = $url;
+
+            $json = json_encode(array(     
+            ));
+
+            $responseObj = $this->callServer($json, $method);
+
+            $response = $responseObj['response'];
+
+            array_push($respArray, $response);
+        }
+
+        print_r(json_decode(json_encode($respArray), true));
+
+        return json_decode(json_encode($respArray), true);
     }
 
     /**
@@ -2815,7 +2822,36 @@ class MCAPI {
      */
     function listMemberActivity($id, $email_address) {
         //batch call to /lists/{list_id}/members/{subscriber_hash}/activity ?
+        //maybe a batch request to /lists/{id}/members/{sub_hash} ?
+        
+        $respArray = array();
 
+        for($i = 0; $i < count($email_address); $i++) {
+            $method = "GET";
+
+            $memberId = md5(strtolower($email_address[$i]));
+
+            $endpoint = '/lists/' . $id . '/members/' . $memberId . '/activity';
+            
+            $url = $this->apiHost . $endpoint;
+
+            $url = parse_url($url);
+
+            $this->apiUrl = $url;
+
+            $json = json_encode(array(     
+            ));
+
+            $responseObj = $this->callServer($json, $method);
+
+            $response = $responseObj['response'];
+
+            array_push($respArray, $response);
+        }
+
+        print_r(json_decode(json_encode($respArray), true));
+
+        return json_decode(json_encode($respArray), true);
     }
 
     /**
@@ -2844,35 +2880,19 @@ class MCAPI {
         
         $url = $this->apiHost . $endpoint;
 
-        $url = $url . $queryString;
-
         $url = parse_url($url);
 
         $this->apiUrl = $url;
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2904,27 +2924,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -2962,27 +2968,13 @@ class MCAPI {
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        return $info;
+        return json_decode(json_encode($response), true);        
     }
 
     /**
@@ -3031,35 +3023,19 @@ class MCAPI {
         
         $url = $this->apiHost . $endpoint;
 
-        $url = $url . $queryString;
-
         $url = parse_url($url);
 
         $this->apiUrl = $url;
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        return $info;
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -3096,35 +3072,19 @@ class MCAPI {
         
         $url = $this->apiHost . $endpoint;
 
-        $url = $url . $queryString;
-
         $url = parse_url($url);
 
         $this->apiUrl = $url;
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        return $info;
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -3149,35 +3109,19 @@ class MCAPI {
         
         $url = $this->apiHost . $endpoint;
 
-        $url = $url . $queryString;
-
         $url = parse_url($url);
 
         $this->apiUrl = $url;
 
         $json = json_encode(array());
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        print_r(json_decode(json_encode($response), true));
 
-        print_r($info);
-
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        return $info;
+        return json_decode(json_encode($response), true);
     }
 
     /**
@@ -3209,29 +3153,16 @@ class MCAPI {
             'html' => $html
         ));
 
-        print_r($url);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = $this->callServer($json, $method);
+        $response = $responseObj['response'];
 
-        $info = json_decode($info);
+        $responseDecoded = json_decode(json_encode($response), true);
 
-        print_r($info);
+        print_r($responseDecoded);
 
-        print_r($info->id);
+        return $responseDecoded;
 
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-        }
-
-        return $info->id;
     }
 
     /**
@@ -3266,25 +3197,13 @@ class MCAPI {
 
         print_r($url);
 
-        $info = $this->callServer($json, $method);
+        $responseObj = $this->callServer($json, $method);
 
-        $info = json_decode($info);
+        $response = $responseObj['value'];
 
-        print_r($info);
+        print_r($responseObj['response']);
 
-        if ($info->errors || $info->status == 404) {
-            echo "************************************************************************************\n\n";
-            echo  (($info->detail) ? $info->detail : "you have an error. Check the response object.") . "\n\n";
-            echo "************************************************************************************\n\n";
-            return false;
-        }
-
-        if (!$info->errors) {
-            echo "************************************************************************************\n\n";
-            echo "Successfully completed.\n\n";
-            echo "************************************************************************************\n\n";
-            return true;
-        }
+        return $response;
     }
 
     /**
@@ -4474,7 +4393,7 @@ $merge = array(
 
 //$api->listMembers($listId);
 
-//$api->templateInfo($tid);
+//$api->templateInfo('2000109');
 
 //$api->templateUpdate($tempId, $values);
 
@@ -4490,7 +4409,7 @@ $merge = array(
 
 //$api->searchCampaigns("tristanTEST");
 
-//$api->templateAdd('tristanTEST', '<html><body><h1>Hello</h1></body></html>');
+$api->templateAdd('tristanTEST', '<html><body><h1>Hello</h1></body></html>');
 
 //$api->listUnsubscribe($listId, 'anothertest@athlonsports.com', $merge, 'html', true, false, true, false);
 
@@ -4593,7 +4512,7 @@ $order = array(
 
 //$api->listInterestGroupingUpdate('57c20e68d7', 'name', "NarutosNinjaWay");
 
-$api->listWebhooks($listId);
+//$api->listWebhooks($listId);
 
 //$api->getWebhookId($listId, "https://athlon-social.herokuapp.com/");
 
@@ -4612,4 +4531,51 @@ $laSources = array(
 
 //$api->listWebhookAdd($listId, "http://www.doodtrxstan.com", $laActions, $laSources);
 
-$api->listStaticSegments($listId);
+//$api->listStaticSegments($listId);
+
+//$api->lists();
+
+//$api->listSubscribe($listId, "doodmgmt@gmail.com");
+//$api->listUnsubscribe($listId, "doodmgmt@gmail.com");
+
+//$api->listUpdateMember($listId, "doodmgmt@gmail.com", array('FNAME' => 'Naruto', 'LNAME' => 'Uzumaki')  );
+
+$users = array
+    ( 
+        array
+        (
+            'EMAIL' => "tgordon3@athlonsports.com", 'FNAME' => "Athlon's",
+            'LNAME' => "Tester",
+            'LOGIN_URL' => "www.athlonsports.com",
+            'GROUPINGS' => ['name' => 'Contest', 'groups' => "NarutosNindo"]
+        ),
+        array
+        (
+            'EMAIL' => "tgordon4@athlonsports.com", 'FNAME' => "Athlon",
+            'LNAME' => "Tester",
+            'LOGIN_URL' => "www.athlonsports.com",
+            'GROUPINGS' => ['name' => 'Contest', 'groups' => "NarutosNindo"]
+        )
+    );
+
+//$api->listBatchSubscribe($listId, $users, $double_optin=true, $update_existing=false, $replace_interests=true);
+
+//$api->listUnsubscribe($listId, "doodmgmt@gmail.com");
+
+//$api->listUpdateMember($listId, "tristan@tdgordon.com",array('FNAME' => 'Naruto', 'LNAME' => 'Uzumaki'));
+
+//$api->listMembers($listId);
+
+//$api->listOneMemberInfo($listId, "tristan@tdgordon.com");
+
+//$api->listMemberActivity($listId, array('tgordon3@athlonsports.com', 'tristan@tdgordon.com', 'tgordon4@athlonsports.com'));
+
+//$api->listAbuseReports($listId);
+
+//$api->listClients($listId);
+
+//$api->templates();
+
+$api->templateAdd("testingTemp", "<span>Only a test</span>");
+
+//$api->templateUpdate($id, $values);
